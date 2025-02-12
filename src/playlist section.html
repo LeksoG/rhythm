@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ultimate Music Library Dashboard</title>
+  <!-- Google Font for a modern look -->
+  <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-color: #121212;
+      --primary-color: #f44336;
+      --secondary-color: #1d1d1d;
+      --card-bg: #1e1e1e;
+      --text-color: #ffffff;
+      --hover-bg: #2a2a2a;
+      --accent-color: #ff9800;
+    }
+    /* ---------- Global Reset & Base Styles ---------- */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      overflow-x: hidden;
+    }
+    /* ---------- Header ---------- */
+    header {
+      background: linear-gradient(90deg, var(--secondary-color), #333);
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+    header h1 {
+      margin: 0;
+      font-weight: 600;
+    }
+    /* ---------- Navigation Tabs ---------- */
+    .navbar {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 10px;
+    }
+    .navbar button {
+      background-color: var(--secondary-color);
+      color: var(--text-color);
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    .navbar button:hover {
+      background-color: var(--hover-bg);
+      transform: scale(1.05);
+    }
+    .navbar .add-btn {
+      background-color: var(--primary-color);
+    }
+    /* ---------- Main Content ---------- */
+    main {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 10px;
+    }
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.5s ease;
+      margin-bottom: 60px;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .tab-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .tab-header h2 {
+      margin: 0;
+    }
+    .tab-header input,
+    .tab-header select {
+      padding: 8px;
+      border-radius: 5px;
+      border: none;
+      background-color: var(--secondary-color);
+      color: var(--text-color);
+    }
+    /* ---------- Grid Layout for Cards ---------- */
+    .item-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 10px;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      cursor: pointer;
+    }
+    .card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+    .card img {
+      width: 100%;
+      display: block;
+    }
+    .card-info {
+      padding: 10px;
+    }
+    .card-info h3 {
+      margin: 5px 0;
+      font-size: 16px;
+      color: var(--primary-color);
+    }
+    .card-info p {
+      margin: 0;
+      font-size: 14px;
+      color: #ccc;
+    }
+    /* ---------- Card Actions (for Playlists/Favorites) ---------- */
+    .card .actions {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      display: flex;
+      gap: 5px;
+    }
+    .card .actions button {
+      background: rgba(0,0,0,0.5);
+      border: none;
+      color: #fff;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background-color 0.3s ease;
+    }
+    .card .actions button:hover {
+      background: var(--accent-color);
+    }
+    /* ---------- Modal Styles ---------- */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 2000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background-color: var(--secondary-color);
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .modal-content input[type="text"],
+    .modal-content input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #555;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
+    .modal-buttons {
+      display: flex;
+      justify-content: space-between;
+    }
+    .modal-buttons button {
+      flex: 1;
+      margin: 0 5px;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: var(--primary-color);
+      color: var(--text-color);
+      transition: background-color 0.3s ease;
+    }
+    .modal-buttons button:hover {
+      background-color: #d32f2f;
+    }
+    /* ---------- Now Playing Bar ---------- */
+    .now-playing {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--secondary-color);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.5);
+      z-index: 1000;
+    }
+    .now-playing .song-details {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .now-playing img {
+      width: 50px;
+      height: 50px;
+      border-radius: 5px;
+      object-fit: cover;
+    }
+    .now-playing .controls button {
+      background: var(--primary-color);
+      border: none;
+      padding: 8px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      color: var(--text-color);
+    }
+    .now-playing .controls button:hover {
+      background: #d32f2f;
+    }
+    /* ---------- Responsive Adjustments ---------- */
+    @media (max-width: 768px) {
+      .tab-header {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <h1>Ultimate Music Library</h1>
+  </header>
+  <!-- Navigation Tabs -->
+  <div class="navbar">
+    <button class="tab-button" data-tab="songs">Songs</button>
+    <button class="tab-button" data-tab="albums">Albums</button>
+    <button class="tab-button" data-tab="playlists">Playlists</button>
+    <button class="tab-button" data-tab="recent">Recently Played</button>
+    <button class="add-btn" onclick="openModal('playlist')">+ Add Playlist</button>
+  </div>
+  <!-- Main Content -->
+  <main>
+    <!-- Songs Tab -->
+    <section id="songs" class="tab-content">
+      <div class="tab-header">
+        <h2>Songs</h2>
+        <div>
+          <input type="text" id="songSearch" placeholder="Search songs..." />
+          <select id="songSort">
+            <option value="default">Sort By</option>
+            <option value="title">Title</option>
+            <option value="artist">Artist</option>
+          </select>
+        </div>
+      </div>
+      <div class="item-grid song-list">
+        <!-- Song cards injected here -->
+      </div>
+    </section>
+    <!-- Albums Tab -->
+    <section id="albums" class="tab-content">
+      <div class="tab-header">
+        <h2>Albums</h2>
+        <div>
+          <input type="text" id="albumSearch" placeholder="Search albums..." />
+          <select id="albumSort">
+            <option value="default">Sort By</option>
+            <option value="title">Title</option>
+            <option value="artist">Artist</option>
+          </select>
+        </div>
+      </div>
+      <div class="item-grid album-grid">
+        <!-- Album cards injected here -->
+      </div>
+    </section>
+    <!-- Playlists Tab -->
+    <section id="playlists" class="tab-content">
+      <div class="tab-header">
+        <h2>Playlists</h2>
+        <div>
+          <input type="text" id="playlistSearch" placeholder="Search playlists..." />
+        </div>
+      </div>
+      <div class="item-grid playlist-list">
+        <!-- Playlist cards injected here -->
+      </div>
+    </section>
+    <!-- Recently Played Tab -->
+    <section id="recent" class="tab-content">
+      <div class="tab-header">
+        <h2>Recently Played</h2>
+      </div>
+      <div class="item-grid recent-list">
+        <!-- Recently played song cards injected here -->
+      </div>
+    </section>
+  </main>
+  <!-- Modal for Playlist Creation -->
+  <div class="modal" id="playlistModal">
+    <div class="modal-content">
+      <h3>Create New Playlist</h3>
+      <input type="text" id="newPlaylistName" placeholder="Playlist Name" />
+      <input type="file" id="newPlaylistCover" accept="image/*" />
+      <div class="modal-buttons">
+        <button onclick="createPlaylist()">Create</button>
+        <button onclick="closeModal('playlist')">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <!-- Now Playing Bar -->
+  <div class="now-playing" id="nowPlayingBar" style="display: none;">
+    <div class="song-details">
+      <img id="nowPlayingCover" src="" alt="Cover" />
+      <div>
+        <div id="nowPlayingTitle">Title</div>
+        <div id="nowPlayingArtist" style="font-size: 14px; color: #ccc;">Artist</div>
+      </div>
+    </div>
+    <div class="controls">
+      <button id="playPauseBtn" onclick="togglePlay()">&#9658;</button>
+    </div>
+  </div>
+  <script>
+    /***** Sample Data *****/
+    let songs = [
+      { id: 1, title: "Song One", artist: "Artist A", cover: "https://via.placeholder.com/200x200?text=Song+1", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
+      { id: 2, title: "Song Two", artist: "Artist B", cover: "https://via.placeholder.com/200x200?text=Song+2", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
+      { id: 3, title: "Song Three", artist: "Artist C", cover: "https://via.placeholder.com/200x200?text=Song+3", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" },
+      { id: 4, title: "Song Four", artist: "Artist D", cover: "https://via.placeholder.com/200x200?text=Song+4", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" },
+      { id: 5, title: "Song Five", artist: "Artist E", cover: "https://via.placeholder.com/200x200?text=Song+5", audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3" }
+    ];
+    let albums = [
+      { id: 1, title: "Album One", artist: "Artist A", cover: "https://via.placeholder.com/200x200?text=Album+1" },
+      { id: 2, title: "Album Two", artist: "Artist B", cover: "https://via.placeholder.com/200x200?text=Album+2" },
+      { id: 3, title: "Album Three", artist: "Artist C", cover: "https://via.placeholder.com/200x200?text=Album+3" }
+    ];
+    let playlists = JSON.parse(localStorage.getItem("playlists")) || [
+      { id: 1, title: "Chill Vibes", cover: "https://via.placeholder.com/200x200?text=Chill+Vibes" },
+      { id: 2, title: "Workout Mix", cover: "https://via.placeholder.com/200x200?text=Workout+Mix" }
+    ];
+    let recentlyPlayed = [];
+
+    /***** Audio Playback & Now Playing Bar *****/
+    let currentAudio = new Audio();
+    let isPlaying = false;
+    let currentSong = null;
+    function playSong(song) {
+      if(currentAudio.src !== song.audio) {
+        currentAudio.src = song.audio;
+      }
+      currentAudio.play();
+      isPlaying = true;
+      currentSong = song;
+      updateNowPlaying(song);
+    }
+    function pauseSong() {
+      currentAudio.pause();
+      isPlaying = false;
+      updateNowPlaying(currentSong);
+    }
+    function togglePlay() {
+      if(isPlaying) {
+        pauseSong();
+      } else {
+        if(currentSong) {
+          playSong(currentSong);
+        }
+      }
+    }
+    currentAudio.addEventListener("ended", () => {
+      isPlaying = false;
+      updateNowPlaying(currentSong);
+    });
+    function updateNowPlaying(song) {
+      const nowPlayingBar = document.getElementById("nowPlayingBar");
+      if(song) {
+        document.getElementById("nowPlayingCover").src = song.cover;
+        document.getElementById("nowPlayingTitle").textContent = song.title;
+        document.getElementById("nowPlayingArtist").textContent = song.artist;
+        document.getElementById("playPauseBtn").innerHTML = isPlaying ? "&#10074;&#10074;" : "&#9658;";
+        nowPlayingBar.style.display = "flex";
+        // Update Recently Played (unique, max 10 items)
+        if(!recentlyPlayed.find(s => s.id === song.id)) {
+          recentlyPlayed.unshift(song);
+          if(recentlyPlayed.length > 10) recentlyPlayed.pop();
+          renderRecentlyPlayed();
+        }
+      } else {
+        nowPlayingBar.style.display = "none";
+      }
+    }
+
+    /***** Render Functions *****/
+    function renderSongs(filter = "", sortBy = "default") {
+      const container = document.querySelector(".song-list");
+      let filtered = songs.filter(song => 
+        song.title.toLowerCase().includes(filter.toLowerCase()) ||
+        song.artist.toLowerCase().includes(filter.toLowerCase())
+      );
+      if(sortBy === "title") {
+        filtered.sort((a, b) => a.title.localeCompare(b.title));
+      } else if(sortBy === "artist") {
+        filtered.sort((a, b) => a.artist.localeCompare(b.artist));
+      }
+      container.innerHTML = "";
+      filtered.forEach(song => {
+        const card = document.createElement("div");
+        card.classList.add("card", "song-card");
+        card.innerHTML = `
+          <img src="${song.cover}" alt="${song.title}">
+          <div class="card-info">
+            <h3>${song.title}</h3>
+            <p>${song.artist}</p>
+          </div>
+        `;
+        card.addEventListener("click", () => playSong(song));
+        container.appendChild(card);
+      });
+    }
+    function renderAlbums(filter = "", sortBy = "default") {
+      const container = document.querySelector(".album-grid");
+      let filtered = albums.filter(album =>
+        album.title.toLowerCase().includes(filter.toLowerCase()) ||
+        album.artist.toLowerCase().includes(filter.toLowerCase())
+      );
+      if(sortBy === "title") {
+        filtered.sort((a, b) => a.title.localeCompare(b.title));
+      } else if(sortBy === "artist") {
+        filtered.sort((a, b) => a.artist.localeCompare(b.artist));
+      }
+      container.innerHTML = "";
+      filtered.forEach(album => {
+        const card = document.createElement("div");
+        card.classList.add("card", "album-card");
+        card.innerHTML = `
+          <img src="${album.cover}" alt="${album.title}">
+          <div class="card-info">
+            <h3>${album.title}</h3>
+            <p>${album.artist}</p>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+    function renderPlaylists(filter = "") {
+      const container = document.querySelector(".playlist-list");
+      let filtered = playlists.filter(playlist =>
+        playlist.title.toLowerCase().includes(filter.toLowerCase())
+      );
+      container.innerHTML = "";
+      filtered.forEach(playlist => {
+        const card = document.createElement("div");
+        card.classList.add("card", "playlist-card");
+        card.innerHTML = `
+          <img src="${playlist.cover}" alt="${playlist.title}">
+          <div class="card-info">
+            <h3>${playlist.title}</h3>
+          </div>
+          <div class="actions">
+            <button onclick="deletePlaylist(${playlist.id})" title="Delete">&#10005;</button>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+    function renderRecentlyPlayed() {
+      const container = document.querySelector(".recent-list");
+      container.innerHTML = "";
+      recentlyPlayed.forEach(song => {
+        const card = document.createElement("div");
+        card.classList.add("card", "song-card");
+        card.innerHTML = `
+          <img src="${song.cover}" alt="${song.title}">
+          <div class="card-info">
+            <h3>${song.title}</h3>
+            <p>${song.artist}</p>
+          </div>
+        `;
+        card.addEventListener("click", () => playSong(song));
+        container.appendChild(card);
+      });
+    }
+
+    /***** Delete Playlist *****/
+    function deletePlaylist(id) {
+      playlists = playlists.filter(p => p.id !== id);
+      localStorage.setItem("playlists", JSON.stringify(playlists));
+      renderPlaylists(document.getElementById("playlistSearch").value);
+    }
+
+    /***** Modal Functions *****/
+    function openModal(type) {
+      if(type === "playlist") {
+        document.getElementById("playlistModal").style.display = "flex";
+      }
+    }
+    function closeModal(type) {
+      if(type === "playlist") {
+        document.getElementById("playlistModal").style.display = "none";
+      }
+    }
+    function createPlaylist() {
+      const name = document.getElementById("newPlaylistName").value.trim();
+      const coverInput = document.getElementById("newPlaylistCover");
+      if(name && coverInput.files.length > 0) {
+        const file = coverInput.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const newPlaylist = {
+            id: Date.now(),
+            title: name,
+            cover: e.target.result
+          };
+          playlists.push(newPlaylist);
+          localStorage.setItem("playlists", JSON.stringify(playlists));
+          renderPlaylists();
+          closeModal("playlist");
+          document.getElementById("newPlaylistName").value = "";
+          document.getElementById("newPlaylistCover").value = "";
+        };
+        reader.readAsDataURL(file);
+      } else {
+        alert("Please enter a playlist name and select a cover image.");
+      }
+    }
+
+    /***** Event Listeners for Search & Sort *****/
+    document.getElementById("songSearch").addEventListener("input", (e) => {
+      renderSongs(e.target.value, document.getElementById("songSort").value);
+    });
+    document.getElementById("songSort").addEventListener("change", (e) => {
+      renderSongs(document.getElementById("songSearch").value, e.target.value);
+    });
+    document.getElementById("albumSearch").addEventListener("input", (e) => {
+      renderAlbums(e.target.value, document.getElementById("albumSort").value);
+    });
+    document.getElementById("albumSort").addEventListener("change", (e) => {
+      renderAlbums(document.getElementById("albumSearch").value, e.target.value);
+    });
+    document.getElementById("playlistSearch").addEventListener("input", (e) => {
+      renderPlaylists(e.target.value);
+    });
+
+    /***** Tab Switching *****/
+    const tabButtons = document.querySelectorAll(".tab-button");
+    tabButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tab = btn.getAttribute("data-tab");
+        switchTab(tab);
+      });
+    });
+    function switchTab(tab) {
+      document.querySelectorAll(".tab-content").forEach(section => {
+        section.style.display = "none";
+      });
+      document.getElementById(tab).style.display = "block";
+    }
+
+    /***** Initialize Default Tab & Render Content *****/
+    document.addEventListener("DOMContentLoaded", () => {
+      switchTab("songs");
+      renderSongs();
+      renderAlbums();
+      renderPlaylists();
+      renderRecentlyPlayed();
+    });
+  </script>
+</body>
+</html>

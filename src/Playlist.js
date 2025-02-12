@@ -1,4 +1,4 @@
-import { Button } from 'D:\music\rhythm\src\Playlist.js'; // Adjust the path as needed
+import { Button } from 'D:\music\rhythm\src\'; // Adjust the path as needed
 import { Plus, Search, X, MoreVertical, Trash, Edit, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 
